@@ -1,0 +1,18 @@
+services:
+  webapp:
+    build:
+      context: .
+    container_name: webapp
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./common-passwords.txt:/app/common-passwords.txt
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - webapp
