@@ -1,0 +1,51 @@
+# Node.js / ESLint
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+.venv/
+venv/
+*.sqlite3
+
+# Flask & server logs
+*.log
+instance/
+*.db
+
+# Docker
+*.pid
+*.pid.lock
+docker-compose.override.yml
+.env.docker
+
+# Reports
+reports/
+dependency-check-report/
+odc-reports/
+*.sarif
+
+# VS Code / IDEs
+.vscode/
+.idea/
+*.swp
+
+# GitHub Actions artifacts
+*.coverage
+coverage.xml
+
+# Ignore generated files
+.DS_Store
+Thumbs.db
+
+# SonarQube scanner files
+.sonar/
+.scannerwork/
+
+# Ignore compiled passwords list if generated/large
+common-passwords.txt
