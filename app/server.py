@@ -1,7 +1,14 @@
 from flask import Flask, request, redirect, render_template, send_from_directory
 import re
+from flask_wtf.csrf import CSRFProtect
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # Load variables from .env
 
 app = Flask(__name__, template_folder='.', static_folder='.')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+csrf = CSRFProtect(app)
 
 # Load common password list into memory
 with open("common-passwords.txt", "r") as f:
