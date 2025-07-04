@@ -8,23 +8,10 @@ on:
 
 jobs:
   ui-tests:
-    name: Playwright UI Test
     runs-on: ubuntu-latest
 
-    services:
-      webapp:
-        build:
-          context: .
-        ports:
-          - 5000:5000
-        options: >-
-          --health-cmd "curl --fail http://localhost:5000 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-    - name: Checkout Repository
+    - name: Checkout code
       uses: actions/checkout@v4
 
     - name: Set up Node.js
@@ -38,8 +25,19 @@ jobs:
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
 
-    - name: Wait for Flask App to Start
-      run: sleep 10
+    - name: Start services with Docker Compose
+      run: docker-compose up -d
 
-    - name: Run Playwright UI Tests
+    - name: Wait for app to be ready
+      run: |
+        echo "Waiting for the app to be ready..."
+        until curl -s http://localhost:5000 > /dev/null; do
+          sleep 2
+        done
+
+    - name: Run Playwright tests
       run: npx playwright test
+
+    - name: Stop Docker Compose
+      if: always()
+      run: docker-compose down
