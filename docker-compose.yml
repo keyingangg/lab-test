@@ -16,3 +16,15 @@ services:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - webapp
+
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    ports:
+      - "3000:3000"  # web UI
+      - "222:22"     # SSH access
+    volumes:
+      - ./gitea:/data
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
