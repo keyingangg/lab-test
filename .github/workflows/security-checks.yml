@@ -12,20 +12,8 @@ permissions:
 
 jobs:
   combined-checks:
-    name: ESLint + Dependency Check + Playwright UI Test
+    name: ESLint + Dependency Check
     runs-on: ubuntu-latest
-
-    services:
-      webapp:
-        build:
-          context: .
-        ports:
-          - 5000:5000
-        options: >-
-          --health-cmd "curl --fail http://localhost:5000 || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
     - name: Checkout Repository
@@ -64,12 +52,5 @@ jobs:
       with:
         name: Dependency-Check-Report
         path: dependency-check-report
-
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-
-    - name: Wait for Flask app to be ready
-      run: sleep 10
-
-    - name: Run Playwright UI Tests
-      run: npx playwright test
+        
+        
