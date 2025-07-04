@@ -49,3 +49,5 @@ Thumbs.db
 
 # Ignore compiled passwords list if generated/large
 common-passwords.txt
+
+gitea/
