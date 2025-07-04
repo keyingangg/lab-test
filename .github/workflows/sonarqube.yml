@@ -29,6 +29,10 @@ jobs:
       uses: sonarsource/sonarqube-scan-action@v2
       with:
         projectBaseDir: .
+        args: >
+          -Dsonar.projectKey=my-secure-webapp
+          -Dsonar.sources=.
+          -Dsonar.projectName=My Secure Web App
       env:
         SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
