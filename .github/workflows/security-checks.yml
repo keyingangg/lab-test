@@ -1,0 +1,54 @@
+name: Security & Quality Checks
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  combined-checks:
+    name: ESLint + Dependency Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Install Node.js dependencies
+      run: npm ci || npm install
+
+    - name: Run ESLint and generate SARIF report
+      run: |
+        mkdir -p reports
+        npx eslint "app/**/*.js" \
+          --format @microsoft/eslint-formatter-sarif \
+          --output-file reports/eslint-results.sarif
+
+    - name: Upload ESLint SARIF to GitHub
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: reports/eslint-results.sarif
+
+    - name: Run OWASP Dependency Check
+      uses: dependency-check/Dependency-Check_Action@main
+      with:
+        project: "MySecureWebApp"
+        path: "."
+        format: "HTML"
+        out: "dependency-check-report"
+
+    - name: Upload Dependency Check Report
+      uses: actions/upload-artifact@v4
+      with:
+        name: Dependency-Check-Report
+        path: dependency-check-report
