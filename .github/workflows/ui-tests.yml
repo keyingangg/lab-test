@@ -1,4 +1,4 @@
-name: Playwright UI Tests
+name: Selenium UI Tests
 
 on:
   push:
@@ -22,8 +22,10 @@ jobs:
     - name: Install dependencies
       run: npm ci || npm install
 
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+    - name: Set up Chrome
+      uses: browser-actions/setup-chrome@v1
+      with:
+        chrome-version: stable
 
     - name: Start services with Docker Compose
       run: docker compose up -d
@@ -35,8 +37,8 @@ jobs:
           sleep 2
         done
 
-    - name: Run Playwright tests
-      run: npx playwright test
+    - name: Run Selenium tests
+      run: npm run test:ui
 
     - name: Stop Docker Compose
       if: always()

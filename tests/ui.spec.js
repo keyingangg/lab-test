@@ -1,21 +1,41 @@
-const { test, expect } = require('@playwright/test');
+const { Builder, By, until } = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
+const { expect } = require('chai');
 
-test('Login page loads and input works', async ({ page }) => {
-  await page.goto('http://localhost:5000');
+describe('Login page', function () {
+  let driver;
 
-  // Check page loaded
-  await expect(page).toHaveTitle(/Login/i);
+  before(async function () {
+    const options = new chrome.Options();
+    options.addArguments('--headless=new', '--no-sandbox', '--disable-dev-shm-usage');
+    driver = await new Builder()
+      .forBrowser('chrome')
+      .setChromeOptions(options)
+      .build();
+  });
 
-  // Type a password
-  await page.fill('input[name="password"]', 'SUPERsecurepass31231!@#');
+  after(async function () {
+    if (driver) await driver.quit();
+  });
 
-  // Click login
-  await page.click('button[type="submit"]');
+  it('loads and input works', async function () {
+    await driver.get('http://localhost:5000');
 
-  // Verify redirect
-//   await expect(page).toHaveURL(/welcome/);
-  await expect(page).toHaveURL(/login/);
+    // Check page loaded
+    await driver.wait(until.titleMatches(/Login/i), 5000);
 
-  // Check password is displayed
-  await expect(page.locator('body')).toContainText('SUPERsecurepass31231!@#');
+    // Type a password
+    const passwordInput = await driver.findElement(By.name('password'));
+    await passwordInput.sendKeys('SUPERsecurepass31231!@#');
+
+    // Click login
+    await driver.findElement(By.css('button[type="submit"]')).click();
+
+    // Verify redirect
+    await driver.wait(until.urlMatches(/login/), 5000);
+
+    // Check password is displayed
+    const bodyText = await driver.findElement(By.css('body')).getText();
+    expect(bodyText).to.include('SUPERsecurepass31231!@#');
+  });
 });
