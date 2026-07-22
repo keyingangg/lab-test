@@ -2,16 +2,20 @@ const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 const { expect } = require('chai');
 
+const APP_URL = process.env.APP_URL || 'http://localhost:5000';
+const SELENIUM_REMOTE_URL = process.env.SELENIUM_REMOTE_URL;
+
 describe('Login page', function () {
   let driver;
 
   before(async function () {
     const options = new chrome.Options();
     options.addArguments('--headless=new', '--no-sandbox', '--disable-dev-shm-usage');
-    driver = await new Builder()
-      .forBrowser('chrome')
-      .setChromeOptions(options)
-      .build();
+    const builder = new Builder().forBrowser('chrome').setChromeOptions(options);
+    if (SELENIUM_REMOTE_URL) {
+      builder.usingServer(SELENIUM_REMOTE_URL);
+    }
+    driver = await builder.build();
   });
 
   after(async function () {
@@ -19,7 +23,7 @@ describe('Login page', function () {
   });
 
   it('loads and input works', async function () {
-    await driver.get('http://localhost:5000');
+    await driver.get(APP_URL);
 
     // Check page loaded
     await driver.wait(until.titleMatches(/Login/i), 5000);

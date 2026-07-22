@@ -1,0 +1,114 @@
+name: Automated Unit & Selenium Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install Node.js dependencies
+      run: npm ci || npm install
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
+
+    - name: Package build artifact
+      run: tar --exclude='.git' -czf build.tar.gz .
+
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifact
+        path: build.tar.gz
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: build-artifact
+
+    - name: Extract build artifact
+      run: tar -xzf build.tar.gz
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
+    - name: Install Node.js dependencies
+      run: npm ci || npm install
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+
+    - name: Install Python dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run Python unit tests
+      run: python -m unittest discover -s tests -p "test_*.py" -v
+
+    - name: Create .env for CI
+      run: echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+
+    - name: Start webapp and Selenium via Docker Compose
+      run: docker compose up -d webapp selenium
+
+    - name: Wait for app to be ready
+      run: |
+        for i in $(seq 1 60); do
+          if curl -s http://localhost:5000 > /dev/null; then
+            echo "App is ready."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "::error::App did not become ready in time."
+        docker compose logs
+        exit 1
+
+    - name: Wait for Selenium Grid to be ready
+      run: |
+        for i in $(seq 1 60); do
+          if curl -s http://localhost:4444/wd/hub/status | grep -q '"ready": *true'; then
+            echo "Selenium is ready."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "::error::Selenium did not become ready in time."
+        docker compose logs selenium
+        exit 1
+
+    - name: Run Selenium tests against remote Grid
+      env:
+        APP_URL: http://webapp:5000
+        SELENIUM_REMOTE_URL: http://localhost:4444/wd/hub
+      run: npm run test:ui
+
+    - name: Stop Docker Compose
+      if: always()
+      run: docker compose down
