@@ -31,7 +31,10 @@ jobs:
       run: pip install -r requirements.txt
 
     - name: Package build artifact
-      run: tar --exclude='.git' -czf build.tar.gz .
+      run: tar --exclude='.git' -czf ../build.tar.gz .
+
+    - name: Move build artifact into workspace
+      run: mv ../build.tar.gz .
 
     - name: Upload build artifact
       uses: actions/upload-artifact@v4
