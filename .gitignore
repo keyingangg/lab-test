@@ -28,6 +28,7 @@ docker-compose.override.yml
 reports/
 dependency-check-report/
 odc-reports/
+odc-data/
 *.sarif
 
 # VS Code / IDEs

@@ -47,6 +47,12 @@ jobs:
         path: "."
         format: "HTML"
         out: "dependency-check-report"
+      # NVD now rate-limits anonymous requests heavily (scans can take
+      # 30+ min or fail without a key). Request a free key at
+      # https://nvd.nist.gov/developers/request-an-api-key and store it as
+      # a repository secret named NVD_API_KEY.
+      env:
+        NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
     - name: Upload Dependency Check Report
       uses: actions/upload-artifact@v4
