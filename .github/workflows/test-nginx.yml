@@ -1,0 +1,38 @@
+name: Test Nginx Reverse Proxy
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test-nginx:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create .env for CI
+      run: echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+
+    - name: Start webapp and nginx
+      run: docker compose up -d webapp nginx
+
+    - name: Wait for nginx to be ready
+      run: |
+        for i in $(seq 1 60); do
+          if curl -s -o /dev/null -w "%{http_code}" http://localhost/ | grep -q 200; then
+            echo "Nginx is ready and proxying correctly."
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "::error::Nginx did not become ready in time."
+        docker compose logs
+        exit 1
+
+    - name: Stop Docker Compose
+      if: always()
+      run: docker compose down

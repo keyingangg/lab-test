@@ -52,3 +52,4 @@ common-passwords.txt
 
 gitea/
 mysql_data/
+certbot/
