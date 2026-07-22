@@ -27,6 +27,9 @@ jobs:
       with:
         chrome-version: stable
 
+    - name: Create .env for CI
+      run: echo "SECRET_KEY=$(openssl rand -hex 32)" > .env
+
     - name: Start services with Docker Compose
       run: docker compose up -d webapp nginx
 
